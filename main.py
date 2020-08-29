@@ -67,11 +67,11 @@ def send_picture(width, height, device):
 
 
 @sleep_after_exec
-def click_random_filter(width, device):
+def click_random_filter(width, height, device):
     if random.randint(1, 2) == 1:
-        device.input_swipe(width - 100, 1700, 100, 1700, 100)
+        device.input_swipe(width - 100, height / 2, 100, 1700, 150)
     else:
-        device.input_swipe(100, 1700, width - 100, 1700, 100)
+        device.input_swipe(100, height / 2, width - 100, 1700, 150)
 
 
 @sleep_after_exec
@@ -103,7 +103,7 @@ def streak_on_device(picture, device: Device):
     open_snapchat(device)
     if picture:
         click_picture(dev_width, dev_height, device)
-        click_random_filter(dev_width, device)
+        click_random_filter(dev_width, dev_height, device)
     else:
         click_video(dev_width, dev_height, device)
 
