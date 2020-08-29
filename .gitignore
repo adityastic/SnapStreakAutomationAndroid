@@ -1,0 +1,4 @@
+# Project exclude paths
+/venv/
+.idea
+192*.png
