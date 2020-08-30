@@ -1,6 +1,6 @@
-============================
-SnapStreakAutomationAndroidd
-============================
+==========
+SnapStreak
+==========
 
 
 Add a short description here!

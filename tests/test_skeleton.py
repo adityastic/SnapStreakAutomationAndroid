@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from snapstreakautomationandroidd.skeleton import fib
+from snapstreak.skeleton import fib
 
 __author__ = "Aditya Gupta"
 __copyright__ = "Aditya Gupta"

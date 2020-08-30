@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Dummy conftest.py for snapstreakautomationandroidd.
+    Dummy conftest.py for snapstreak.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:

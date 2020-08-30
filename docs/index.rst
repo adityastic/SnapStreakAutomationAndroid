@@ -1,8 +1,8 @@
-============================
-SnapStreakAutomationAndroidd
-============================
+==========
+SnapStreak
+==========
 
-This is the documentation of **SnapStreakAutomationAndroidd**.
+This is the documentation of **SnapStreak**.
 
 .. note::
 

@@ -35,7 +35,7 @@ except ImportError:
     from sphinx import apidoc
 
 output_dir = os.path.join(__location__, "api")
-module_dir = os.path.join(__location__, "../src/snapstreakautomationandroidd")
+module_dir = os.path.join(__location__, "../src/snapstreak")
 try:
     shutil.rmtree(output_dir)
 except FileNotFoundError:
@@ -81,7 +81,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'SnapStreakAutomationAndroidd'
+project = u'SnapStreak'
 copyright = u'2020, Aditya Gupta'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -151,7 +151,7 @@ html_theme_options = {
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 try:
-    from snapstreakautomationandroidd import __version__ as version
+    from snapstreak import __version__ as version
 except ImportError:
     pass
 else:
@@ -216,7 +216,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'snapstreakautomationandroidd-doc'
+htmlhelp_basename = 'snapstreak-doc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -235,7 +235,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'SnapStreakAutomationAndroidd Documentation',
+  ('index', 'user_guide.tex', u'SnapStreak Documentation',
    u'Aditya Gupta', 'manual'),
 ]
 
