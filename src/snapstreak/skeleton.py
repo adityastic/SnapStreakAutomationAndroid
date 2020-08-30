@@ -1,114 +1,150 @@
-# -*- coding: utf-8 -*-
-"""
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
-[options.entry_points] section in setup.cfg:
+import random
+import threading
+import time
+from datetime import datetime
 
-    console_scripts =
-         fibonacci = snapstreak.skeleton:run
+from ppadb.client import Client as AdbClient
+from ppadb.device import Device
+from .ocr import find_last_snap
 
-Then run `python setup.py install` which will install the command `fibonacci`
-inside your current environment.
-Besides console scripts, the header (i.e. until _logger...) of this file can
-also be used as template for Python modules.
-
-Note: This skeleton file can be safely removed if not needed!
-"""
-
-import argparse
-import sys
-import logging
-
-from snapstreak import __version__
-
-__author__ = "Aditya Gupta"
-__copyright__ = "Aditya Gupta"
-__license__ = "mit"
-
-_logger = logging.getLogger(__name__)
+client = AdbClient(host="127.0.0.1", port=5037)
 
 
-def fib(n):
-    """Fibonacci example function
+def sleep_after_exec(func):
+    def wrapper(*args, **kwargs):
+        func(*args, **kwargs)
+        time.sleep(0.9)
 
-    Args:
-      n (int): integer
+    return wrapper
 
-    Returns:
-      int: n-th Fibonacci number
+
+def get_resolution(device):
+    return tuple(
+        [int(x) for x in str(device.shell("wm size")).split(" ")[2].replace("\n", "").split("x")])
+
+
+def log(string):
+    print(f'[{datetime.utcnow().strftime("%H:%M:%S.%f")[:-3]}]: {string}')
+
+
+@sleep_after_exec
+def open_snapchat(device):
     """
-    assert n > 0
-    a, b = 1, 1
-    for i in range(n-1):
-        a, b = b, a+b
-    return a
-
-
-def parse_args(args):
-    """Parse command line parameters
-
-    Args:
-      args ([str]): command line parameters as list of strings
-
-    Returns:
-      :obj:`argparse.Namespace`: command line parameters namespace
+    used: adb shell pm dump PACKAGE_NAME | grep -A 1 MAIN to find the activity for com.snapchat.android
     """
-    parser = argparse.ArgumentParser(
-        description="Just a Fibonacci demonstration")
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="SnapStreak {ver}".format(ver=__version__))
-    parser.add_argument(
-        dest="n",
-        help="n-th Fibonacci number",
-        type=int,
-        metavar="INT")
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        dest="loglevel",
-        help="set loglevel to INFO",
-        action="store_const",
-        const=logging.INFO)
-    parser.add_argument(
-        "-vv",
-        "--very-verbose",
-        dest="loglevel",
-        help="set loglevel to DEBUG",
-        action="store_const",
-        const=logging.DEBUG)
-    return parser.parse_args(args)
+    log(f"{device.get_serial_no()}: Opening Snapchat")
+    device.shell("am start -n com.snapchat.android/.LandingPageActivity")
 
 
-def setup_logging(loglevel):
-    """Setup basic logging
-
-    Args:
-      loglevel (int): minimum loglevel for emitting messages
-    """
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(level=loglevel, stream=sys.stdout,
-                        format=logformat, datefmt="%Y-%m-%d %H:%M:%S")
+def go_to_homepage(device):
+    log(f"{device.get_serial_no()}: Going Back Home")
+    device.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME")
 
 
-def main(args):
-    """Main entry point allowing external calls
+@sleep_after_exec
+def click_picture(width, height, device):
+    x = width / 2
+    y = height - height / 8
+    log(f"{device.get_serial_no()}: Clicking Camera at {x},{y}")
+    device.input_tap(x, y)
 
-    Args:
-      args ([str]): command line parameter list
-    """
-    args = parse_args(args)
-    setup_logging(args.loglevel)
-    _logger.debug("Starting crazy calculations...")
-    print("The {}-th Fibonacci number is {}".format(args.n, fib(args.n)))
-    _logger.info("Script ends here")
+
+@sleep_after_exec
+def click_video(width, height, device):
+    x = width / 2
+    y = height - height / 8
+    log(f"{device.get_serial_no()}: Clicking Video at {x},{y}")
+    device.input_swipe(x, y, x, y, 10000)
+
+
+@sleep_after_exec
+def send_picture(width, height, device):
+    x = width - width / 16
+    y = height - height / 16
+    log(f"{device.get_serial_no()}: Clicking Send at {x},{y}")
+    device.input_tap(x, y)
+
+
+@sleep_after_exec
+def click_random_filter(width, height, device):
+    if random.randint(1, 2) == 1:
+        device.input_swipe(width - 100, height / 2, 100, 1700, 150)
+    else:
+        device.input_swipe(100, height / 2, width - 100, 1700, 150)
+
+
+@sleep_after_exec
+def click_last_snap(device, last_snap_x, last_snap_y):
+    log(f"{device.get_serial_no()}: Clicking Last Send at {last_snap_x},{last_snap_y}")
+    device.input_tap(last_snap_x, last_snap_y)
+
+
+def capture_screen(device):
+    result = device.screencap()
+    with open(f"{device.get_serial_no()}-screen.png", "wb") as fp:
+        fp.write(result)
+
+
+#
+# def click_all_people(dev_width, dev_height, device, recents_y):
+#     x = 90
+#     y = recents_y + 90
+#     threshold = 45
+#     log(f"{device.get_serial_no()}: Clicking All Recents from {100},{recents_y}")
+#     for i in range(60):
+#         log("Tap")
+#         device.input_tap(x, y)
+#         y += 90
+
+
+def streak_on_device(picture, device: Device):
+    dev_width, dev_height = get_resolution(device)
+    open_snapchat(device)
+    if picture:
+        click_picture(dev_width, dev_height, device)
+        click_random_filter(dev_width, dev_height, device)
+    else:
+        click_video(dev_width, dev_height, device)
+
+    send_picture(dev_width, dev_height, device)
+
+    capture_screen(device)
+
+    log(f"{device.get_serial_no()}: Finding Last Snap")
+    (x, y, recents_y) = find_last_snap(device.get_serial_no())
+    if x == -1:
+        log(f"{device.get_serial_no()}: Last Snap NOT FOUND")
+    else:
+        log(f"{device.get_serial_no()}: Last Snap FOUND")
+        click_last_snap(device, x, y)
+        send_picture(dev_width, dev_height, device)
+        go_to_homepage(device)
+
+
+def streak_call(picture: bool):
+    for device in client.devices():
+        log(f"Working on {device}")
+        threading.Thread(target=streak_on_device, args=(picture, device)).start()
+
+
+def main():
+    log("Press V for Video, C for Picture and Q for Quiting the tool")
+    while True:
+        listening_char = input()
+        if listening_char == "V" or listening_char == "v":
+            streak_call(picture=False)
+        elif listening_char == "C" or listening_char == "c":
+            streak_call(picture=True)
+        elif listening_char == "Q" or listening_char == "q":
+            exit()
+        else:
+            log("Wrong Entry! Try again")
 
 
 def run():
     """Entry point for console_scripts
     """
-    main(sys.argv[1:])
+    main()
 
 
 if __name__ == "__main__":
